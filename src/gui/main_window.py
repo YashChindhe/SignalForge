@@ -170,6 +170,11 @@ class MainWindow(QMainWindow):
         else:
             self._load_stylesheet("light_theme.qss")
             
+        # Update graph colors
+        self.spectrum_plot.set_theme(self._is_dark_mode)
+        self.waterfall_plot.set_theme(self._is_dark_mode)
+        self.constellation.set_theme(self._is_dark_mode)
+            
     def _on_load_file(self):
         """Handle file load."""
         filepath, _ = QFileDialog.getOpenFileName(

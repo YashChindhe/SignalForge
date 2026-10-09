@@ -38,3 +38,24 @@ class SpectrumPlotWidget(QWidget):
         self.ax.relim()
         self.ax.autoscale_view()
         self.canvas.draw()
+
+    def set_theme(self, is_dark):
+        """Update the matplotlib theme dynamically."""
+        bg = '#16213e' if is_dark else '#F8F9FA'
+        ax_bg = '#1a1a2e' if is_dark else '#FFFFFF'
+        fg = '#eaeaea' if is_dark else '#2B2D42'
+        grid = '#0f3460' if is_dark else '#DEE2E6'
+        title = '#e94560' if is_dark else '#4361EE'
+        line = '#00ff88' if is_dark else '#4361EE'
+        
+        self.figure.set_facecolor(bg)
+        self.ax.set_facecolor(ax_bg)
+        self.ax.tick_params(colors=fg)
+        self.ax.xaxis.label.set_color(fg)
+        self.ax.yaxis.label.set_color(fg)
+        for spine in self.ax.spines.values():
+            spine.set_color(grid)
+        self.ax.title.set_color(title)
+        self.ax.grid(True, color=grid, linestyle='--', alpha=0.7)
+        self.line.set_color(line)
+        self.canvas.draw()

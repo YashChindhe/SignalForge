@@ -47,3 +47,14 @@ class WaterfallPlotWidget(QWidget):
                  time_range / len(spectral_data.spectrogram_times))
         
         self.img.setTransform(tr)
+
+    def set_theme(self, is_dark):
+        """Update the pyqtgraph theme dynamically."""
+        bg = '#16213e' if is_dark else '#FFFFFF'
+        fg = '#eaeaea' if is_dark else '#2B2D42'
+        
+        self.plot_widget.setBackground(bg)
+        self.plot_widget.getAxis('bottom').setPen(fg)
+        self.plot_widget.getAxis('bottom').setTextPen(fg)
+        self.plot_widget.getAxis('left').setPen(fg)
+        self.plot_widget.getAxis('left').setTextPen(fg)
