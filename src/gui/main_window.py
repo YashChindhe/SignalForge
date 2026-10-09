@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import (
     QMainWindow, QApplication, QTabWidget, QVBoxLayout, QHBoxLayout,
-    QWidget, QToolBar, QStatusBar, QFileDialog, QMessageBox, QSplitter
+    QWidget, QToolBar, QStatusBar, QFileDialog, QMessageBox, QSplitter, QScrollArea
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
@@ -72,7 +72,12 @@ class MainWindow(QMainWindow):
         
         left_widget = QWidget()
         left_widget.setLayout(left_panel)
-        left_widget.setMaximumWidth(350)
+        
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(left_widget)
+        scroll_area.setMaximumWidth(380)
+        scroll_area.setMinimumWidth(300)
         
         # ── Right Panel: Visualization Tabs ──
         self.viz_tabs = QTabWidget()
@@ -91,9 +96,9 @@ class MainWindow(QMainWindow):
         
         # ── Splitter ──
         splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.addWidget(left_widget)
+        splitter.addWidget(scroll_area)
         splitter.addWidget(self.viz_tabs)
-        splitter.setSizes([300, 980])
+        splitter.setSizes([350, 930])
         
         main_layout.addWidget(splitter)
     
@@ -190,6 +195,13 @@ class MainWindow(QMainWindow):
         self.waterfall_plot.update_plot(spectral)
         self.mod_panel.update_result(classification)
         self.signal_info.update_info(self.pipeline.state.signal, spectral)
+        
+        # Auto-fill the manual override dropdown with the AI's prediction
+        if classification and classification.predicted_mod:
+            index = self.mod_panel.combo_override.findText(classification.predicted_mod)
+            if index >= 0:
+                self.mod_panel.combo_override.setCurrentIndex(index)
+                
         self.status_bar.showMessage("Analysis complete")
     
     def _on_classify_async(self):

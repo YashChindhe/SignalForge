@@ -43,6 +43,9 @@ class SignalForgePipeline:
             self.classifier = ModulationClassifier(model_path, scaler_path, encoder_path)
         except Exception as e:
             print(f"Warning: Could not load ML model: {e}")
+            from .heuristic import HeuristicClassifier
+            self.classifier = HeuristicClassifier()
+            print("Using Heuristic AI Classifier fallback.")
         self.state = PipelineState()
     
     def stage1_load_file(self, filepath: str, 
@@ -149,6 +152,12 @@ class SignalForgePipeline:
                 bits,
                 nsym=params.get('nsym', 10)
             )
+        elif method == "ldpc":
+            from .fec.ldpc import ldpc_decode
+            self.state.decoded_bits = ldpc_decode(bits)
+        elif method == "concatenated":
+            from .fec.concatenated import concatenated_decode
+            self.state.decoded_bits = concatenated_decode(bits)
         else:
             raise ValueError(f"Unknown FEC method: {method}")
         

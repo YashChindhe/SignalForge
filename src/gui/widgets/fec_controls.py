@@ -59,4 +59,8 @@ class FECControlsWidget(QWidget):
             return {"method": "viterbi", "constraint_length": self.spin_k.value(), "code_rate_inv": rate_inv}
         elif idx == 1:
             return {"method": "reed_solomon", "n": self.spin_rs_n.value(), "k": self.spin_rs_k.value(), "nsym": self.spin_rs_n.value() - self.spin_rs_k.value()}
+        elif idx == 2:
+            return {"method": "ldpc"}
+        elif idx == 3:
+            return {"method": "concatenated"}
         return {"method": "unknown"}

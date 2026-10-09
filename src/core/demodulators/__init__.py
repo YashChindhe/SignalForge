@@ -2,6 +2,7 @@ from .base import BaseDemodulator, DemodResult
 from .fsk import FSKDemodulator
 from .bpsk import BPSKDemodulator
 from .qpsk import QPSKDemodulator
+from .qam import QAM16Demodulator
 
 DEMODULATOR_MAP = {
     "2FSK": lambda: FSKDemodulator(num_levels=2),
@@ -9,6 +10,7 @@ DEMODULATOR_MAP = {
     "BPSK": lambda: BPSKDemodulator(),
     "QPSK": lambda: QPSKDemodulator(),
     "8PSK": lambda: QPSKDemodulator(),  # Reuse QPSK with modifications
+    "16QAM": lambda: QAM16Demodulator(),
 }
 
 def get_demodulator(mod_type: str) -> BaseDemodulator:
