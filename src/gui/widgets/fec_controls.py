@@ -45,7 +45,7 @@ class FECControlsWidget(QWidget):
         vbox.addWidget(self.stack)
         self.combo_method.currentIndexChanged.connect(self.stack.setCurrentIndex)
         
-        self.btn_decode = QPushButton("🔓 Run FEC Decoder")
+        self.btn_decode = QPushButton("Run FEC Decoder")
         vbox.addWidget(self.btn_decode)
         
         group.setLayout(vbox)

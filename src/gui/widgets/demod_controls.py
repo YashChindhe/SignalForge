@@ -18,7 +18,7 @@ class DemodControlsWidget(QWidget):
         
         form.addRow("Symbol Rate:", self.spin_symbol_rate)
         
-        self.btn_demodulate = QPushButton("📻 Run Demodulation")
+        self.btn_demodulate = QPushButton("Run Demodulation")
         form.addRow(self.btn_demodulate)
         
         group.setLayout(form)

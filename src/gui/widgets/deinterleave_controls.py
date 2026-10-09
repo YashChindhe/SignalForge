@@ -53,7 +53,7 @@ class DeinterleaveControlsWidget(QWidget):
         
         self.combo_method.currentIndexChanged.connect(self.stack.setCurrentIndex)
         
-        self.btn_apply = QPushButton("🔄 Apply De-Interleaving")
+        self.btn_apply = QPushButton("Apply De-Interleaving")
         vbox.addWidget(self.btn_apply)
         
         group.setLayout(vbox)

@@ -8,7 +8,7 @@ class FileLoaderWidget(QWidget):
         self.setLayout(layout)
         
         # Load Button
-        self.btn_load = QPushButton("📂 Load Signal File (.wav / .iq)")
+        self.btn_load = QPushButton("Load Signal File (.wav / .iq)")
         self.btn_load.setStyleSheet("font-size: 14px; padding: 12px; background-color: #0f3460;")
         layout.addWidget(self.btn_load)
         
