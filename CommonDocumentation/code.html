@@ -1,0 +1,1022 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>SignalForge - RF Signal Intelligence Workbench</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              teal: '#00d4aa',
+              mint: '#46f1c5',
+              cyan: '#38bdf8',
+              emerald: '#10b981',
+              dark: '#0b0f17',
+              slate: '#131926',
+              surface: '#182133',
+              card: '#1e293b'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Inter', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.45); }
+    .graticule-grid { stroke: rgba(148, 163, 184, 0.12); }
+    .dark .graticule-grid { stroke: rgba(255, 255, 255, 0.08); }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-[#0b0f17] text-slate-800 dark:text-slate-100 font-sans antialiased h-screen flex flex-col overflow-hidden select-none transition-colors duration-200">
+<!-- ================= NATIVE DESKTOP WINDOW TITLEBAR ================= -->
+<header class="h-10 bg-white dark:bg-[#0e1420] border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between px-4 shrink-0 z-50">
+<div class="flex items-center gap-3">
+<!-- Brand Logo -->
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-600 dark:text-brand-teal text-[20px] font-bold">radar</span>
+<span class="font-mono font-bold text-sm tracking-tight text-slate-900 dark:text-white">SignalForge</span>
+<span class="text-xs px-2 py-0.5 rounded font-mono bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-brand-teal border border-teal-200/60 dark:border-teal-800/50">v3.5 PRO</span>
+</div>
+<div class="h-4 w-px bg-slate-300 dark:bg-slate-700/60 mx-1"></div>
+<!-- File Ingest Chip -->
+<div class="flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs">
+<span class="material-symbols-outlined text-[15px] text-teal-600 dark:text-brand-teal">audio_file</span>
+<span class="font-mono font-medium text-slate-700 dark:text-slate-200 truncate max-w-xs">rec_20241029_433mhz_qpsk_2msps.iq</span>
+<span class="font-mono text-[10px] uppercase px-1.5 py-0.2 bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-brand-teal rounded font-semibold">CF32</span>
+</div>
+<!-- Live DSP Status Pill -->
+<div class="hidden md:flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/40 text-xs font-mono font-medium">
+<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="">DSP Core: Ready (64-bit AVX-512)</span>
+</div>
+</div>
+<!-- Center/Right Quick Stats & Window Controls -->
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center gap-3 text-xs font-mono text-slate-500 dark:text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-sky-500">tune</span> CF: <strong>433.920 MHz</strong></span>
+<span class="">•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-teal-500">speed</span> SR: <strong>2.048 MS/s</strong></span>
+</div>
+<!-- Interactive Theme Toggle Button -->
+<button class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-medium transition-all" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+<span class="material-symbols-outlined text-[16px] text-amber-500 dark:text-amber-400" id="themeIcon">light_mode</span>
+<span class="hidden sm:inline text-xs font-mono" id="themeLabel">Light</span>
+</button>
+<!-- Desktop Window Actions -->
+<div class="flex items-center gap-1 pl-2 border-l border-slate-200 dark:border-slate-800">
+<button class="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition" title="Minimize">
+<span class="material-symbols-outlined text-[14px]">remove</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition" title="Maximize">
+<span class="material-symbols-outlined text-[13px]">crop_square</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center rounded hover:bg-red-500 hover:text-white text-slate-500 dark:text-slate-400 transition" title="Close">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ================= SUB-NAVIGATION WORKSPACE BAR ================= -->
+<div class="h-12 bg-white/70 dark:bg-[#111726] border-b border-slate-200 dark:border-slate-800/80 px-4 flex items-center justify-between shrink-0">
+<div class="flex items-center gap-3">
+<nav class="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/70 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+<a class="px-3 py-1.5 rounded-md font-mono text-xs font-semibold bg-white dark:bg-slate-800 text-teal-600 dark:text-brand-teal shadow-sm flex items-center gap-1.5" href="javascript:void(0)" onclick="navToWorkspace('spectrum')">
+<span class="material-symbols-outlined text-[15px]">auto_fix_high</span> Guided Workbench
+        </a>
+<a class="px-3 py-1.5 rounded-md font-mono text-xs text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-brand-teal hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-1.5" href="javascript:void(0)" onclick="alert('Batch Processing Mode selected - Bulk .IQ folder ingest ready.')">
+<span class="material-symbols-outlined text-[15px]">folder_copy</span> Batch Ingest
+        </a>
+<a class="px-3 py-1.5 rounded-md font-mono text-xs text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-brand-teal hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-1.5" href="javascript:void(0)" onclick="alert('Spectral Search Mode - Dual trace reference comparison active.')">
+<span class="material-symbols-outlined text-[15px]">compare</span> Spectral Compare
+        </a>
+<a class="px-3 py-1.5 rounded-md font-mono text-xs text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-brand-teal hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-1.5" href="javascript:void(0)" onclick="alert('DSP Engine Diagnostics: AVX-512 SIMD Core 0-3 active. Latency: 0.12ms.')">
+<span class="material-symbols-outlined text-[15px]">memory</span> DSP Diagnostics
+        </a>
+</nav>
+</div>
+<!-- Right Process Badge & Session Info -->
+<div class="flex items-center gap-4 text-xs font-mono">
+<div class="hidden md:flex items-center gap-2 text-slate-500 dark:text-slate-400">
+<span class="">SESSION:</span>
+<span class="text-slate-800 dark:text-slate-200 font-semibold px-2 py-0.5 rounded bg-slate-200/60 dark:bg-slate-800">REC-433MHZ-BURST_082</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-slate-500 dark:text-slate-400">THREAD:</span>
+<span class="text-sky-600 dark:text-sky-400 font-semibold">QThread #02 (Core 3)</span>
+</div>
+</div>
+</div>
+<!-- ================= MAIN SPLIT CANVAS ================= -->
+<main class="flex-1 flex overflow-hidden p-4 gap-4 bg-slate-100 dark:bg-[#0b0f17]">
+<!-- ================= LEFT DRAWER: GUIDED DSP PIPELINE (380px, Spaced & Ergonomic) ================= -->
+<aside class="w-[390px] xl:w-[410px] shrink-0 flex flex-col bg-white dark:bg-[#131926] rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+<!-- Pipeline Header with Progress Indicator -->
+<div class="p-4 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#151d2c]">
+<div class="flex items-center justify-between mb-3">
+<div>
+<h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-600 dark:text-brand-teal text-[20px]">account_tree</span>
+              Guided DSP Pipeline
+            </h2>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated signal classification &amp; decode flow</p>
+</div>
+<span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-teal-100 dark:bg-brand-teal/15 text-teal-700 dark:text-brand-teal border border-teal-200 dark:border-brand-teal/30">
+            Step 4 / 5 Active
+          </span>
+</div>
+<!-- Stepper Chips -->
+<div class="grid grid-cols-5 gap-1.5 pt-1">
+<div class="flex flex-col items-center py-1.5 px-1 rounded-md bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-center font-mono text-[11px] font-bold">
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] mb-0.5">✓</span>
+<span class="">1. IQ</span>
+</div>
+<div class="flex flex-col items-center py-1.5 px-1 rounded-md bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-center font-mono text-[11px] font-bold">
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] mb-0.5">✓</span>
+<span class="">2. INFO</span>
+</div>
+<div class="flex flex-col items-center py-1.5 px-1 rounded-md bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-center font-mono text-[11px] font-bold">
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] mb-0.5">✓</span>
+<span class="">3. ML</span>
+</div>
+<div class="flex flex-col items-center py-1.5 px-1 rounded-md bg-teal-500 dark:bg-brand-teal text-slate-900 font-mono text-[11px] font-bold shadow-md shadow-teal-500/20 ring-2 ring-teal-400/40">
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-slate-900 text-teal-300 text-[9px] mb-0.5">4</span>
+<span class="">DEMOD</span>
+</div>
+<div class="flex flex-col items-center py-1.5 px-1 rounded-md bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-slate-400 text-center font-mono text-[11px] font-medium">
+<span class="flex items-center justify-center w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-[9px] mb-0.5">5</span>
+<span class="">FEC</span>
+</div>
+</div>
+</div>
+<!-- Accordion Pipeline Content (Scrollable with clean breathing room) -->
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<!-- STEP 1: INGESTION (Completed / Collapsible) -->
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#182132] transition">
+<div class="p-3.5 flex items-center justify-between cursor-pointer" onclick="toggleAccordion('acc-step1')">
+<div class="flex items-center gap-2.5">
+<span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-mono text-xs font-bold">✓</span>
+<div>
+<h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">1. Signal Ingestion &amp; I/Q Mapping</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-mono">CF32 • 2.048 MS/s • Interleaved I/Q</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">expand_more</span>
+</div>
+<div class="p-4 pt-1 border-t border-slate-200/60 dark:border-slate-800/80 space-y-3" id="acc-step1">
+<button class="w-full h-10 px-4 rounded-lg bg-teal-600 hover:bg-teal-700 dark:bg-teal-500 dark:hover:bg-teal-400 text-white dark:text-slate-900 font-medium text-xs font-mono flex items-center justify-center gap-2 transition shadow-sm" onclick="triggerFileIngest()">
+<span class="material-symbols-outlined text-[18px]">file_upload</span>
+              SELECT .WAV / .IQ RECORDING FILE
+            </button>
+<div class="grid grid-cols-2 gap-2 text-xs">
+<div>
+<label class="block text-slate-500 dark:text-slate-400 mb-1 font-mono text-[11px] uppercase">Format Spec</label>
+<select class="w-full h-8 px-2 rounded-md bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-mono">
+<option selected="">CF32 (Float32 Complex)</option>
+<option>CS16 (Int16 Complex)</option>
+<option>CS8 (Int8 RTL-SDR)</option>
+</select>
+</div>
+<div>
+<label class="block text-slate-500 dark:text-slate-400 mb-1 font-mono text-[11px] uppercase">Sample Rate</label>
+<div class="flex items-center h-8 px-2 rounded-md bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700">
+<input class="w-full bg-transparent font-mono text-xs focus:outline-none" type="text" value="2.048">
+<span class="text-slate-400 text-[11px] font-mono">MS/s</span>
+</div>
+</div>
+</div>
+<!-- Waveform validation preview -->
+<div class="p-2.5 rounded-lg bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-1.5">
+<div class="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400">
+<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 500-sample I/Q validation</span>
+<span class="text-emerald-500 font-bold">VALID FORMAT</span>
+</div>
+<div class="h-12 w-full bg-slate-100 dark:bg-slate-950 rounded flex items-center justify-center overflow-hidden relative">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 300 40">
+<line class="text-slate-300 dark:text-slate-800" stroke="currentColor" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="300" y1="20" y2="20"></line>
+<path d="M0,20 Q20,2 40,20 T80,20 T120,20 T160,20 T200,20 T240,20 T280,20 L300,20" fill="none" stroke="#00d4aa" stroke-width="1.8"></path>
+<path d="M0,10 Q20,32 40,10 T80,10 T120,10 T160,10 T200,10 T240,10 T280,10 L300,10" fill="none" stroke="#38bdf8" stroke-dasharray="4,2" stroke-width="1.4"></path>
+</svg>
+<div class="absolute right-2 bottom-1 flex gap-2 font-mono text-[9px] bg-slate-900/60 px-1 rounded text-white">
+<span class="text-teal-400">I: Real</span>
+<span class="text-sky-400">Q: Imag</span>
+</div>
+</div>
+</div>
+<div class="mt-2 p-2.5 rounded-lg bg-white dark:bg-[#0b0f17] border border-slate-200 dark:border-[#1d2536]">
+<div class="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mb-1">
+<span class="uppercase tracking-wider font-mono">Buffer Waveform (I/Q Preview)</span>
+<span class="text-teal-600 dark:text-teal-400 font-semibold font-mono">±0.82 V FS</span>
+</div>
+<div class="h-14 w-full bg-slate-100 dark:bg-[#090c13] border border-slate-200 dark:border-[#1b2537] rounded relative flex items-center justify-center overflow-visible">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 320 56">
+<line class="text-slate-300 dark:text-[#1f2637]" stroke="currentColor" stroke-dasharray="2,2" stroke-width="1" x1="0" x2="320" y1="28" y2="28"></line>
+<path d="M0,28 Q15,10 30,28 T60,28 T90,12 T120,44 T150,28 T180,10 T210,46 T240,28 T270,14 T300,42 T320,28" fill="none" opacity="0.85" stroke="#38bdf8" stroke-width="1.5"></path>
+<path d="M0,28 Q15,44 30,28 T60,28 T90,42 T120,12 T150,28 T180,44 T210,10 T240,28 T270,40 T300,14 T320,28" fill="none" stroke="#28dfb5" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="flex justify-between text-[9px] font-mono text-slate-500 dark:text-slate-500 mt-1">
+<span class="">-1.0V</span>
+<span class="">0.0V (DC)</span>
+<span class="">+1.0V</span>
+</div>
+</div></div>
+</div>
+<!-- STEP 2: METRICS & PROFILE (Summary view) -->
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#182132] p-3.5 space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-mono text-xs font-bold">✓</span>
+<h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">2. Signal Metrics &amp; RF Profile</h3>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">AUTO-LOCKED</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-xs font-mono">
+<div class="p-2.5 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800">
+<span class="text-slate-500 dark:text-slate-400 text-[10px] block uppercase">Est. Center Freq</span>
+<span class="text-sm font-bold text-teal-600 dark:text-brand-teal">433.920 MHz</span>
+</div>
+<div class="p-2.5 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800">
+<span class="text-slate-500 dark:text-slate-400 text-[10px] block uppercase">Occupied BW (-3dB)</span>
+<span class="text-sm font-bold text-sky-500 dark:text-sky-400">1.250 MHz</span>
+</div>
+<div class="p-2.5 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800">
+<span class="text-slate-500 dark:text-slate-400 text-[10px] block uppercase">Capture Length</span>
+<span class="text-sm font-bold text-slate-800 dark:text-slate-200">8.00 s (16.4M spl)</span>
+</div>
+<div class="p-2.5 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800">
+<span class="text-slate-500 dark:text-slate-400 text-[10px] block uppercase">In-Band SNR</span>
+<span class="text-sm font-bold text-emerald-500">+18.4 dB</span>
+</div>
+</div>
+</div>
+<!-- STEP 3: MODULATION ML (Classified) -->
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#182132] p-3.5 space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-mono text-xs font-bold">✓</span>
+<div>
+<h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">3. Modulation Inference (ResNet-1D)</h3>
+</div>
+</div>
+<span class="text-xs font-mono font-bold text-emerald-500">78% Confidence</span>
+</div>
+<div class="p-3 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-mono text-xs text-slate-500 dark:text-slate-400">PREDICTED CLASS:</span>
+<span class="text-sm font-mono font-bold text-teal-600 dark:text-brand-teal bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded border border-teal-200 dark:border-teal-800/40">QPSK (4-PSK)</span>
+</div>
+<!-- Confidence Breakdown Meter -->
+<div class="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex">
+<div class="bg-teal-500 h-full w-[78%]" title="QPSK: 78%"></div>
+<div class="bg-sky-400 h-full w-[14%]" title="8PSK: 14%"></div>
+<div class="bg-indigo-400 h-full w-[6%]" title="BPSK: 6%"></div>
+<div class="bg-amber-400 h-full w-[2%]" title="16-QAM: 2%"></div>
+</div>
+<div class="flex items-center justify-between font-mono text-[10px] text-slate-500 dark:text-slate-400 pt-0.5">
+<span class=""><span class="inline-block w-2 h-2 rounded-full bg-teal-500 mr-1"></span>QPSK 78%</span>
+<span class=""><span class="inline-block w-2 h-2 rounded-full bg-sky-400 mr-1"></span>8PSK 14%</span>
+<span class=""><span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-1"></span>BPSK 6%</span>
+<span class=""><span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span>16QAM 2%</span>
+</div>
+<div class="pt-1 flex items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800">
+<span class="font-mono text-[11px] text-slate-500 dark:text-slate-400">Manual Override:</span>
+<select class="h-7 px-2 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+<option selected="">QPSK (Verified via Phase Rings)</option>
+<option>BPSK (Binary Phase Shift)</option>
+<option>8PSK (8-Phase Quadrature)</option>
+<option>16-QAM (Quadrature Amp)</option>
+</select>
+</div>
+</div>
+</div>
+<!-- STEP 4: ACTIVE DEMODULATOR CONFIGURATION (Highlighted Active) -->
+<div class="rounded-xl border-2 border-teal-500/80 dark:border-brand-teal bg-white dark:bg-[#182236] p-4 space-y-3.5 shadow-md shadow-teal-500/10">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-teal-500 dark:bg-brand-teal text-slate-900 flex items-center justify-center font-mono text-xs font-bold shadow-sm">4</span>
+<h3 class="text-sm font-bold text-slate-900 dark:text-white">4. Demodulator Pipeline</h3>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-brand-teal border border-teal-300/60 dark:border-teal-700/60 uppercase">
+              ACTIVE STAGE
+            </span>
+</div>
+<div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-3">
+<div>
+<label class="block text-slate-500 dark:text-slate-400 mb-1 font-mono text-[11px] uppercase">Demod Architecture</label>
+<div class="flex items-center justify-between p-2 rounded-md bg-white dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-xs font-mono font-medium">
+<span class="">Costas Loop + Gardner TED</span>
+<span class="text-teal-600 dark:text-brand-teal text-[11px] font-bold">RRC Matched</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="block text-slate-500 dark:text-slate-400 mb-1 font-mono text-[11px] uppercase">Symbol Rate</label>
+<div class="flex items-center h-8 px-2 rounded-md bg-white dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700">
+<input class="w-full bg-transparent font-mono text-xs text-right pr-1 focus:outline-none" type="text" value="1.000">
+<span class="text-slate-400 text-xs font-mono">MBd</span>
+</div>
+</div>
+<div>
+<label class="block text-slate-500 dark:text-slate-400 mb-1 font-mono text-[11px] uppercase">Roll-off (α)</label>
+<div class="flex items-center h-8 px-2 rounded-md bg-white dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700">
+<input class="w-full bg-transparent font-mono text-xs text-right pr-1 focus:outline-none" type="text" value="0.35">
+<span class="text-slate-400 text-xs font-mono">RRC</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full h-10 px-4 rounded-lg bg-teal-500 hover:bg-teal-400 dark:bg-brand-teal dark:hover:bg-teal-300 text-slate-950 font-mono font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm" id="btnRunDemod" onclick="runDemodulation()">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+              EXECUTE REAL-TIME DEMODULATE
+            </button>
+<div class="flex items-center justify-between text-xs font-mono pt-1 text-slate-600 dark:text-slate-400">
+<span class="">Carrier Sync State:</span>
+<span class="text-emerald-500 font-bold flex items-center gap-1" id="demodLockStatus">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Locked (EVM: 4.82% RMS)
+              </span>
+</div>
+</div>
+</div>
+<!-- STEP 5: DE-INTERLEAVING & FEC -->
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#182132] p-3.5 space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center font-mono text-xs font-bold">5</span>
+<h3 class="text-sm font-semibold text-slate-800 dark:text-slate-200">5. De-interleave &amp; FEC Decoder</h3>
+</div>
+<span class="text-xs font-mono text-slate-500">Ready</span>
+</div>
+<div class="p-3 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-2.5">
+<div>
+<label class="block text-slate-500 dark:text-slate-400 mb-1 font-mono text-[11px] uppercase">Decoder Model</label>
+<select class="w-full h-8 px-2 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-mono">
+<option selected="">Viterbi Hard/Soft (Rate 1/2, K=7)</option>
+<option>Reed-Solomon RS(255, 223)</option>
+<option>LDPC (DVB-S2 64800)</option>
+</select>
+</div>
+<div class="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400 p-2 rounded bg-slate-50 dark:bg-slate-800/60">
+<span class="">POLYNOMIALS: G1=171, G2=133</span>
+<span class="text-emerald-500 font-semibold">0 Errors (BER &lt; 1e-6)</span>
+</div>
+<button class="w-full h-9 rounded-lg bg-slate-800 hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-200 font-mono text-xs font-semibold flex items-center justify-center gap-2 transition" id="btnRunFec" onclick="runFecDecode()">
+<span class="material-symbols-outlined text-[16px] text-teal-400">electric_bolt</span>
+              EXECUTE FEC DECODE &amp; DUMP BITS
+            </button>
+</div>
+</div>
+</div>
+</aside>
+<!-- ================= RIGHT MAIN WORKSPACE: GENEROUS VISUALIZATION SUITE ================= -->
+<div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#131926] rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+<!-- Viewport Ribbon Navigation Tabs -->
+<div class="p-3 border-b border-slate-200 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 bg-slate-50/60 dark:bg-[#151d2c]">
+<!-- Tab Buttons (Spacious, prominent) -->
+<div class="flex items-center gap-1.5 font-mono text-xs" id="workbenchTabs">
+<button class="px-4 py-2 rounded-lg bg-teal-600 dark:bg-brand-teal text-white dark:text-slate-950 font-bold flex items-center gap-2 shadow-sm transition" id="tab-btn-spectrum" onclick="switchVisualization('spectrum')">
+<span class="material-symbols-outlined text-[18px]">monitoring</span>
+<span class="">Spectrum Analyzer (Welch PSD)</span>
+</button>
+<button class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2 transition" id="tab-btn-waterfall" onclick="switchVisualization('waterfall')">
+<span class="material-symbols-outlined text-[18px]">waves</span>
+<span class="">Waterfall Spectrogram</span>
+</button>
+<button class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2 transition" id="tab-btn-constellation" onclick="switchVisualization('constellation')">
+<span class="material-symbols-outlined text-[18px]">scatter_plot</span>
+<span class="">I/Q Constellation</span>
+</button>
+<button class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2 transition" id="tab-btn-bitstream" onclick="switchVisualization('bitstream')">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+<span class="">Bit Stream &amp; Hex</span>
+</button>
+</div>
+<!-- Analyzer Control Toolbar -->
+<div class="flex items-center gap-2 text-xs font-mono">
+<div class="flex items-center bg-slate-200/60 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-300/60 dark:border-slate-700/80 gap-2">
+<span class="text-slate-500 dark:text-slate-400">SPAN:</span>
+<span class="text-teal-600 dark:text-brand-teal font-bold">2.048 MHz</span>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">vertical_align_top</span>
+<span class="">PEAK HOLD: ON</span>
+</button>
+<div class="hidden sm:flex items-center bg-slate-200/60 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-300/60 dark:border-slate-700/80 gap-1.5">
+<span class="text-slate-500 dark:text-slate-400">PALETTE:</span>
+<span class="font-bold text-slate-700 dark:text-slate-200">PLASMA</span>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-semibold flex items-center gap-1.5 transition">
+<span class="material-symbols-outlined text-[15px]">download</span>
+<span class="">EXPORT CSV</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Multi-View Body -->
+<div class="flex-1 overflow-y-auto p-4 space-y-4">
+<!-- ================= VIEW 1: SPECTRUM ANALYZER (FULL PROMINENCE, NO CUT-OFFS) ================= -->
+<section class="flex flex-col gap-4" id="view-spectrum">
+<!-- Main Spectrum Graticule Viewport (Tall 490px canvas, generous padding & full axis labels) -->
+<div class="bg-white dark:bg-[#0c121e] rounded-xl border border-slate-200 dark:border-slate-800/90 p-4 shadow-sm relative flex flex-col">
+<!-- Graph Header HUD Overlay -->
+<div class="flex flex-wrap items-center justify-between pb-3 mb-2 border-b border-slate-100 dark:border-slate-800 text-xs font-mono">
+<div class="flex items-center gap-4 text-slate-600 dark:text-slate-300">
+<span class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+                  PSD TRACE: CH-A (32x Averaged)
+                </span>
+<span class="">CF: <strong class="text-teal-600 dark:text-brand-teal">433.920000 MHz</strong></span>
+<span class="">RBW: <strong>1.0 kHz</strong></span>
+<span class="">VBW: <strong>3.0 kHz</strong></span>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">location_searching</span>
+                  MARKER 1: +12.4 kHz (-24.2 dBFS)
+                </span>
+<span class="text-slate-400 text-[11px]">WINDOW: BLACKMAN-HARRIS 2048</span>
+</div>
+</div>
+<!-- Vector SVG Graticule Canvas (490px Height, full margins so 0 to -120 dB and -1.024 to +1.024 MHz are completely visible) -->
+<div class="w-full h-[470px] bg-white dark:bg-[#080d15] rounded-lg border border-slate-200 dark:border-slate-800/60 overflow-hidden relative">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 450">
+<defs>
+<!-- Gradient for PSD filled region -->
+<linearGradient id="spectrumPhosphor" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#00d4aa" stop-opacity="0.35"></stop>
+<stop offset="45%" stop-color="#00d4aa" stop-opacity="0.10"></stop>
+<stop offset="100%" stop-color="#00d4aa" stop-opacity="0.0"></stop>
+</linearGradient>
+<!-- Filter measurement shaded box -->
+<linearGradient id="bwMeasureBand" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.18"></stop>
+<stop offset="100%" stop-color="#38bdf8" stop-opacity="0.02"></stop>
+</linearGradient>
+</defs>
+<!-- Horizontal Power Lines (dBFS: -10 to -120 dB) -->
+<!-- Origin starts at X=70, ends at X=960 to guarantee margin for labels -->
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="35" y2="35"></line>
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="85" y2="85"></line>
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="135" y2="135"></line>
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="185" y2="185"></line>
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="235" y2="235"></line>
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="285" y2="285"></line>
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="335" y2="335"></line>
+<line class="graticule-grid" stroke-width="1" x1="75" x2="960" y1="385" y2="385"></line>
+<!-- Vertical Frequency Lines (-1.0 MHz to +1.0 MHz) -->
+<line class="graticule-grid" stroke-dasharray="3,3" stroke-width="1" x1="180" x2="180" y1="20" y2="400"></line>
+<line class="graticule-grid" stroke-dasharray="3,3" stroke-width="1" x1="290" x2="290" y1="20" y2="400"></line>
+<line class="graticule-grid" stroke-dasharray="3,3" stroke-width="1" x1="400" x2="400" y1="20" y2="400"></line>
+<line opacity="0.6" stroke="#38bdf8" stroke-width="1.2" x1="517" x2="517" y1="15" y2="405"></line> <!-- Center Freq DC -->
+<line class="graticule-grid" stroke-dasharray="3,3" stroke-width="1" x1="635" x2="635" y1="20" y2="400"></line>
+<line class="graticule-grid" stroke-dasharray="3,3" stroke-width="1" x1="745" x2="745" y1="20" y2="400"></line>
+<line class="graticule-grid" stroke-dasharray="3,3" stroke-width="1" x1="855" x2="855" y1="20" y2="400"></line>
+<!-- Occupied Bandwidth Measurement Shaded Band (1.250 MHz) -->
+<rect fill="url(#bwMeasureBand)" height="300" width="565" x="235" y="90"></rect>
+<line stroke="#38bdf8" stroke-dasharray="5,3" stroke-width="1.5" x1="235" x2="235" y1="60" y2="390"></line>
+<line stroke="#38bdf8" stroke-dasharray="5,3" stroke-width="1.5" x1="800" x2="800" y1="60" y2="390"></line>
+<!-- Width dimension arrow -->
+<line stroke="#38bdf8" stroke-width="1.5" x1="235" x2="800" y1="90" y2="90"></line>
+<circle cx="235" cy="90" fill="#38bdf8" r="3.5"></circle>
+<circle cx="800" cy="90" fill="#38bdf8" r="3.5"></circle>
+<text fill="#38bdf8" font-family="Inter" font-size="12" font-weight="700" text-anchor="middle" x="517" y="80">
+                  OCCUPIED BANDWIDTH (-3 dB): 1.250 MHz
+                </text>
+<!-- Peak Hold Envelope Background Trace -->
+<path d="M75,385 L160,378 L210,345 L250,165 L290,110 L400,95 L490,82 L525,84 L610,95 L720,115 L770,170 L820,348 L890,380 L960,385" fill="none" opacity="0.4" stroke="#2dd4bf" stroke-dasharray="3,2" stroke-width="1.2"></path>
+<!-- Real-time Welch Averaged PSD Filled Polygon -->
+<polygon fill="url(#spectrumPhosphor)" points="75,395 75,385 110,383 150,380 200,375 230,345 255,240 275,150 310,120 360,112 410,108 460,100 495,98 525,88 555,96 590,106 640,108 690,112 735,124 765,160 795,240 820,350 860,378 910,382 960,385 960,395"></polygon>
+<!-- Main Active PSD Line Trace (Teal/Emerald high-contrast line) -->
+<path d="M75,385 L110,383 L150,380 L200,375 L230,345 L255,240 L275,150 L310,120 L360,112 L410,108 L460,100 L495,98 L525,88 L555,96 L590,106 L640,108 L690,112 L735,124 L765,160 L795,240 L820,350 L860,378 L910,382 L960,385" fill="none" stroke="#00d4aa" stroke-linecap="round" stroke-width="2.6"></path>
+<!-- Peak Marker Pin -->
+<polygon fill="#10b981" points="525,88 518,72 532,72"></polygon>
+<circle cx="525" cy="88" fill="#10b981" r="4"></circle>
+<text fill="#10b981" font-family="Inter" font-size="11" font-weight="700" text-anchor="middle" x="525" y="64">
+                  PK: -24.2 dBFS (+12.4 kHz)
+                </text>
+<!-- Y-Axis dBFS Labels (Fully visible, left-padded at X=65) -->
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="39">0 dBFS</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="89">-15 dB</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="139">-30 dB</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="189">-45 dB</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="239">-60 dB</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="289">-75 dB</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="339">-90 dB</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="65" y="389">-110 dB</text>
+<!-- X-Axis Frequency Offset Labels (Comfortably visible, bottom-padded at Y=425) -->
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="start" x="75" y="425">-1.024 MHz</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="middle" x="290" y="425">-512 kHz</text>
+<text fill="#00d4aa" font-family="Inter" font-size="12" font-weight="700" text-anchor="middle" x="517" y="425">0.0 (433.920 MHz)</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="middle" x="745" y="425">+512 kHz</text>
+<text fill="#94a3b8" font-family="Inter" font-size="11" font-weight="500" text-anchor="end" x="960" y="425">+1.024 MHz</text>
+</svg>
+<!-- Live Watermark Overlay -->
+<div class="absolute bottom-3 left-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-3 py-1 rounded-md border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-2">
+<span class="">FFT: 2048 PTS</span>
+<span class="">•</span>
+<span class="">OVERLAP: 75%</span>
+<span class="">•</span>
+<span class="">AVG: 32 FRAMES</span>
+<span class="">•</span>
+<span class="text-teal-600 dark:text-brand-teal font-semibold">NO CLIPPING DETECTED</span>
+</div>
+</div>
+</div>
+<!-- COMPANION SPLIT DECK: Generous Spectrogram Slice & Constellation Quick View -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- 1. Mini Spectrogram Strip -->
+<div class="bg-white dark:bg-[#0c121e] rounded-xl border border-slate-200 dark:border-slate-800/90 p-4 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-600 dark:text-brand-teal text-[18px]">waves</span>
+<h4 class="text-xs font-mono font-bold uppercase text-slate-800 dark:text-slate-200">Spectrogram Depth Slice (0 to -8.0s)</h4>
+</div>
+<span class="text-xs font-mono text-sky-500 font-semibold">Δt: 25.0 ms / line</span>
+</div>
+<!-- Canvas simulation -->
+<div class="h-36 w-full rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden relative flex flex-col justify-between p-1">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 130">
+<!-- Background baseline -->
+<rect class="text-slate-100 dark:text-[#0b0f17]" fill="currentColor" height="130" width="400" x="0" y="0"></rect>
+<!-- Time heat strips -->
+<rect fill="#ef4444" height="14" opacity="0.6" width="140" x="130" y="0"></rect>
+<rect fill="#fbbf24" height="14" opacity="0.8" width="80" x="160" y="0"></rect>
+<rect fill="#00d4aa" height="18" opacity="0.85" width="160" x="120" y="14"></rect>
+<rect fill="#38bdf8" height="18" opacity="0.95" width="100" x="150" y="14"></rect>
+<!-- Noise gap -->
+<rect class="text-slate-200 dark:text-[#1e293b]" fill="currentColor" height="14" opacity="0.4" width="40" x="180" y="32"></rect>
+<!-- Packet 2 -->
+<rect fill="#10b981" height="24" opacity="0.9" width="170" x="115" y="46"></rect>
+<rect fill="#00d4aa" height="24" opacity="1.0" width="120" x="140" y="46"></rect>
+<rect fill="#00d4aa" height="24" opacity="0.75" width="180" x="110" y="70"></rect>
+<rect fill="#3b82f6" height="36" opacity="0.65" width="150" x="125" y="94"></rect>
+<rect fill="#00d4aa" height="36" opacity="0.85" width="100" x="150" y="94"></rect>
+</svg>
+<!-- Color bar legend -->
+<div class="absolute right-2 top-2 bottom-2 w-3 rounded bg-gradient-to-t from-slate-900 via-teal-500 to-amber-300 flex flex-col justify-between items-center text-[7px] font-mono text-black font-bold py-0.5">
+<span class="">-20</span>
+<span class="">-65</span>
+<span class="">-110</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400 mt-2">
+<span class="">Buffer: Circular Rolling 1,024 lines</span>
+<button class="text-teal-600 dark:text-brand-teal hover:underline font-bold flex items-center gap-1" onclick="switchVisualization('waterfall')">
+                  Expand Full Waterfall →
+                </button>
+</div>
+</div>
+<!-- 2. Mini Constellation Scope (No cut-off dots) -->
+<div class="bg-white dark:bg-[#0c121e] rounded-xl border border-slate-200 dark:border-slate-800/90 p-4 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-600 dark:text-brand-teal text-[18px]">scatter_plot</span>
+<h4 class="text-xs font-mono font-bold uppercase text-slate-800 dark:text-slate-200">QPSK Constellation Quick Lock</h4>
+</div>
+<span class="text-xs font-mono text-emerald-500 font-bold">EVM: 4.82% RMS</span>
+</div>
+<!-- Scope Canvas -->
+<div class="h-36 w-full rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center p-2 relative">
+<svg class="h-full aspect-square" viewBox="0 0 160 160">
+<!-- Axis Cross -->
+<line stroke="#1e293b" stroke-width="1.2" x1="80" x2="80" y1="5" y2="155"></line>
+<line stroke="#1e293b" stroke-width="1.2" x1="5" x2="155" y1="80" y2="80"></line>
+<!-- Unit Ring -->
+<circle cx="80" cy="80" fill="none" r="50" stroke="#1e293b" stroke-dasharray="2,2"></circle>
+<!-- QPSK 4 Symbol Clusters -->
+<!-- Quadrant 1 (+I, +Q) -->
+<circle cx="115" cy="45" fill="#00d4aa" fill-opacity="0.2" r="14"></circle>
+<circle cx="115" cy="45" fill="#00d4aa" fill-opacity="0.45" r="7"></circle>
+<circle cx="115" cy="45" fill="#ffffff" r="2"></circle>
+<circle cx="118" cy="42" fill="#00d4aa" r="1"></circle>
+<circle cx="112" cy="48" fill="#00d4aa" r="1"></circle>
+<!-- Quadrant 2 (-I, +Q) -->
+<circle cx="45" cy="45" fill="#00d4aa" fill-opacity="0.2" r="14"></circle>
+<circle cx="45" cy="45" fill="#00d4aa" fill-opacity="0.45" r="7"></circle>
+<circle cx="45" cy="45" fill="#ffffff" r="2"></circle>
+<circle cx="42" cy="48" fill="#00d4aa" r="1"></circle>
+<circle cx="48" cy="42" fill="#00d4aa" r="1"></circle>
+<!-- Quadrant 3 (-I, -Q) -->
+<circle cx="45" cy="115" fill="#00d4aa" fill-opacity="0.2" r="14"></circle>
+<circle cx="45" cy="115" fill="#00d4aa" fill-opacity="0.45" r="7"></circle>
+<circle cx="45" cy="115" fill="#ffffff" r="2"></circle>
+<circle cx="47" cy="118" fill="#00d4aa" r="1"></circle>
+<circle cx="43" cy="112" fill="#00d4aa" r="1"></circle>
+<!-- Quadrant 4 (+I, -Q) -->
+<circle cx="115" cy="115" fill="#00d4aa" fill-opacity="0.2" r="14"></circle>
+<circle cx="115" cy="115" fill="#00d4aa" fill-opacity="0.45" r="7"></circle>
+<circle cx="115" cy="115" fill="#ffffff" r="2"></circle>
+<circle cx="112" cy="118" fill="#00d4aa" r="1"></circle>
+<circle cx="118" cy="112" fill="#00d4aa" r="1"></circle>
+<!-- Axes labels -->
+<text fill="#64748b" font-family="Inter" font-size="8" x="145" y="76">+I</text>
+<text fill="#64748b" font-family="Inter" font-size="8" x="84" y="14">+Q</text>
+</svg>
+<div class="absolute bottom-2 right-3 font-mono text-[10px] text-slate-400">
+                  Phase Error: <strong>0.72°</strong>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400 mt-2">
+<span class="">Lock: Gardner TED &amp; Costas Loop</span>
+<button class="text-teal-600 dark:text-brand-teal hover:underline font-bold flex items-center gap-1" onclick="switchVisualization('constellation')">
+                  Deep Vector Scope →
+                </button>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= VIEW 2: EXPANDED WATERFALL (Full Spectrogram) ================= -->
+<section class="hidden flex-col gap-4" id="view-waterfall">
+<div class="bg-white dark:bg-[#0c121e] rounded-xl border border-slate-200 dark:border-slate-800/90 p-4 shadow-sm space-y-3">
+<div class="flex items-center justify-between text-xs font-mono">
+<span class="font-bold text-slate-900 dark:text-white uppercase">FULL-FRAME TIME-FREQUENCY SPECTROGRAM (HIGH DEFINITION)</span>
+<div class="flex items-center gap-3">
+<span class="text-slate-500">LINE RATE: <strong>40 FPS</strong></span>
+<span class="text-teal-600 dark:text-brand-teal font-bold">SCRUB: T = -2.485 s</span>
+</div>
+</div>
+<!-- Full Spectrogram Canvas -->
+<div class="w-full h-[520px] bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 p-3 relative flex flex-col justify-between overflow-hidden">
+<div class="w-full h-full flex flex-col justify-around opacity-95">
+<!-- Burst 1 -->
+<div class="w-full h-16 relative flex items-center justify-center">
+<div class="w-1/2 h-full bg-gradient-to-r from-transparent via-teal-500 to-transparent opacity-80 blur-xs"></div>
+<span class="absolute left-4 font-mono text-xs text-teal-400 font-bold">T= -0.42s [PREAMBLE 64b DETECTED]</span>
+</div>
+<!-- Squelch -->
+<div class="w-full h-8 flex items-center px-4 font-mono text-xs text-slate-600 italic">
+                  --- NOISE FLOOR (-108 dBm) SQUELCH ---
+                </div>
+<!-- Dense payload -->
+<div class="w-full h-32 relative flex items-center justify-center">
+<div class="w-3/5 h-full bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-95"></div>
+<div class="absolute inset-y-0 w-1/4 bg-sky-400/40"></div>
+<span class="absolute left-4 font-mono text-xs text-slate-950 font-bold bg-white/90 px-2 py-0.5 rounded">
+                    T= -1.80s [TELEMETRY BURST #412: +18.4 dB SNR]
+                  </span>
+</div>
+<!-- Cursor line -->
+<div class="w-full h-px bg-red-500 relative flex items-center">
+<div class="absolute -top-3 left-4 px-2 py-0.5 bg-red-500 text-white font-mono text-[10px] font-bold rounded">
+                    CURSOR: 433.924 MHz @ -2.485 s
+                  </div>
+</div>
+<!-- Burst 3 -->
+<div class="w-full h-20 relative flex items-center justify-center">
+<div class="w-1/2 h-full bg-gradient-to-r from-transparent via-teal-600 to-transparent opacity-85"></div>
+<span class="absolute left-4 font-mono text-xs text-teal-400 font-bold">T= -3.15s [ACK FRAME PACKET]</span>
+</div>
+</div>
+<!-- Base Frequency Ruler -->
+<div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs font-mono text-slate-400">
+<span class="">432.896 MHz (-1.024)</span>
+<span class="">433.408 MHz (-512k)</span>
+<span class="text-teal-400 font-bold">433.920 MHz (CF)</span>
+<span class="">434.432 MHz (+512k)</span>
+<span class="">434.944 MHz (+1.024)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= VIEW 3: EXPANDED CONSTELLATION SCOPE ================= -->
+<section class="hidden flex-col gap-4" id="view-constellation">
+<div class="bg-white dark:bg-[#0c121e] rounded-xl border border-slate-200 dark:border-slate-800/90 p-4 shadow-sm flex flex-col lg:flex-row gap-6">
+<!-- Large Vector Scope -->
+<div class="flex-1 h-[500px] bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 p-4 flex flex-col items-center justify-center relative">
+<span class="absolute top-3 left-4 font-mono text-xs text-slate-400">I/Q VECTOR MAP • PERSISTENCE 200ms • HARD SLICE BOUNDARIES</span>
+<svg class="h-[400px] aspect-square" viewBox="0 0 320 320">
+<!-- Precision Circles -->
+<circle cx="160" cy="160" fill="none" r="130" stroke="#1e293b" stroke-width="1"></circle>
+<circle cx="160" cy="160" fill="none" r="92" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"></circle>
+<circle cx="160" cy="160" fill="none" r="45" stroke="#1e293b" stroke-width="1"></circle>
+<!-- Axes -->
+<line stroke="#475569" stroke-width="1.4" x1="160" x2="160" y1="15" y2="305"></line>
+<line stroke="#475569" stroke-width="1.4" x1="15" x2="305" y1="160" y2="160"></line>
+<!-- Decision Grid Cross (X) -->
+<line stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1" x1="30" x2="290" y1="30" y2="290"></line>
+<line stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1" x1="30" x2="290" y1="290" y2="30"></line>
+<!-- Cluster 00 (Top Right) -->
+<ellipse cx="225" cy="95" fill="#00d4aa" fill-opacity="0.2" rx="24" ry="24"></ellipse>
+<ellipse cx="225" cy="95" fill="#00d4aa" fill-opacity="0.45" rx="14" ry="14"></ellipse>
+<circle cx="225" cy="95" fill="#ffffff" r="3"></circle>
+<text fill="#00d4aa" font-family="Inter" font-size="13" font-weight="bold" x="255" y="85">[0, 0]</text>
+<!-- Cluster 01 (Top Left) -->
+<ellipse cx="95" cy="95" fill="#00d4aa" fill-opacity="0.2" rx="24" ry="24"></ellipse>
+<ellipse cx="95" cy="95" fill="#00d4aa" fill-opacity="0.45" rx="14" ry="14"></ellipse>
+<circle cx="95" cy="95" fill="#ffffff" r="3"></circle>
+<text fill="#00d4aa" font-family="Inter" font-size="13" font-weight="bold" x="50" y="85">[0, 1]</text>
+<!-- Cluster 11 (Bottom Left) -->
+<ellipse cx="95" cy="225" fill="#00d4aa" fill-opacity="0.2" rx="24" ry="24"></ellipse>
+<ellipse cx="95" cy="225" fill="#00d4aa" fill-opacity="0.45" rx="14" ry="14"></ellipse>
+<circle cx="95" cy="225" fill="#ffffff" r="3"></circle>
+<text fill="#00d4aa" font-family="Inter" font-size="13" font-weight="bold" x="50" y="250">[1, 1]</text>
+<!-- Cluster 10 (Bottom Right) -->
+<ellipse cx="225" cy="225" fill="#00d4aa" fill-opacity="0.2" rx="24" ry="24"></ellipse>
+<ellipse cx="225" cy="225" fill="#00d4aa" fill-opacity="0.45" rx="14" ry="14"></ellipse>
+<circle cx="225" cy="225" fill="#ffffff" r="3"></circle>
+<text fill="#00d4aa" font-family="Inter" font-size="13" font-weight="bold" x="255" y="250">[1, 0]</text>
+</svg>
+<div class="absolute bottom-3 flex gap-6 font-mono text-xs text-slate-400">
+<span class="">PHASE ERROR: <strong class="text-emerald-400">0.72° RMS</strong></span>
+<span class="">MAG ERROR: <strong class="text-emerald-400">0.94%</strong></span>
+<span class="">I/Q IMBALANCE: <strong class="text-slate-200">0.02 dB</strong></span>
+</div>
+</div>
+<!-- Constellation Telemetry Details -->
+<div class="w-full lg:w-80 space-y-4">
+<div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+<h4 class="text-xs font-mono font-bold uppercase text-slate-500">Demod Constellation Stats</h4>
+<div class="space-y-2 font-mono text-xs">
+<div class="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800">
+<span class="text-slate-500">Modulation Order:</span>
+<span class="font-bold">M=4 (2 bits/sym)</span>
+</div>
+<div class="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800">
+<span class="text-slate-500">Gross EVM:</span>
+<span class="font-bold text-emerald-500">4.82%</span>
+</div>
+<div class="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800">
+<span class="text-slate-500">Peak EVM:</span>
+<span class="font-bold text-emerald-500">9.11%</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="text-slate-500">Carrier Lock:</span>
+<span class="font-bold text-teal-500">COSTAS LOCKED</span>
+</div>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 font-mono text-xs">
+<h4 class="text-xs font-bold uppercase text-slate-500">Loop Filter State</h4>
+<div class="flex justify-between">
+<span class="text-slate-500">Phase Damping (ζ):</span>
+<span class="">0.707</span>
+</div>
+<div class="flex justify-between">
+<span class="text-slate-500">Loop Bandwidth (Bn):</span>
+<span class="">0.025</span>
+</div>
+<button class="w-full h-8 mt-2 rounded bg-teal-600 hover:bg-teal-500 text-white font-bold transition">
+                  RECALIBRATE COSTAS
+                </button>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= VIEW 4: BITSTREAM & HEX VIEWER ================= -->
+<section class="hidden flex-col gap-4" id="view-bitstream">
+<div class="bg-white dark:bg-[#0c121e] rounded-xl border border-slate-200 dark:border-slate-800/90 p-4 shadow-sm space-y-4">
+<!-- Pattern Match Header -->
+<div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono">
+<div class="flex items-center gap-3">
+<span class="text-slate-500 font-bold uppercase">Sync Word / Preamble:</span>
+<input class="h-8 px-2.5 rounded bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 font-bold text-teal-600 dark:text-brand-teal w-28 focus:outline-none" id="syncWordInput" type="text" value="0xEB90">
+<button class="h-8 px-3 rounded bg-teal-600 text-white font-bold flex items-center gap-1.5 hover:bg-teal-500 transition" onclick="searchSyncWord()">
+<span class="material-symbols-outlined text-[15px]">saved_search</span> SEARCH
+                </button>
+</div>
+<div class="flex items-center gap-4">
+<span class="">MATCH COUNT: <strong class="text-emerald-500">14 FRAMES FOUND</strong></span>
+<span class="">FRAME SIZE: <strong>256 BYTES</strong></span>
+</div>
+</div>
+<!-- Hex Table -->
+<div class="w-full bg-slate-50 dark:bg-slate-950 rounded-lg p-4 font-mono text-xs overflow-x-auto border border-slate-200 dark:border-slate-800">
+<div class="min-w-[700px] space-y-1">
+<div class="flex items-center text-slate-400 font-bold pb-2 border-b border-slate-200 dark:border-slate-800 text-[11px]">
+<span class="w-24">OFFSET</span>
+<span class="flex-1 tracking-widest pl-2">00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F</span>
+<span class="w-48 pl-4">ASCII DECODED</span>
+</div>
+<div class="flex items-center py-1 hover:bg-slate-200/50 dark:hover:bg-slate-900 rounded px-1 transition">
+<span class="w-24 text-slate-500">00000000</span>
+<div class="flex-1 flex gap-2">
+<span class="bg-teal-500 text-slate-950 font-bold px-1 rounded">EB 90</span>
+<span class="">54 4C 4D 5F 48 44</span>
+<span class="text-slate-400">52 5F 56 32 00 01 04 22</span>
+</div>
+<span class="w-48 pl-4 text-emerald-500 font-bold">..TLM_HDR_V2..."</span>
+</div>
+<div class="flex items-center py-1 hover:bg-slate-200/50 dark:hover:bg-slate-900 rounded px-1 transition">
+<span class="w-24 text-slate-500">00000010</span>
+<div class="flex-1 flex gap-2">
+<span class="">41 5A 49 4D 55 54 48 5F</span>
+<span class="">32 37 30 2E 34 32 00 FF</span>
+</div>
+<span class="w-48 pl-4 text-slate-800 dark:text-slate-200">AZIMUTH_270.42..</span>
+</div>
+<div class="flex items-center py-1 hover:bg-slate-200/50 dark:hover:bg-slate-900 rounded px-1 transition">
+<span class="w-24 text-slate-500">00000020</span>
+<div class="flex-1 flex gap-2">
+<span class="">45 4C 45 56 41 54 49 4F</span>
+<span class="">4E 5F 2B 34 35 2E 31 38</span>
+</div>
+<span class="w-48 pl-4 text-slate-800 dark:text-slate-200">ELEVATION_+45.18</span>
+</div>
+<div class="flex items-center py-1 hover:bg-slate-200/50 dark:hover:bg-slate-900 rounded px-1 transition">
+<span class="w-24 text-slate-500">00000030</span>
+<div class="flex-1 flex gap-2">
+<span class="">53 49 47 5F 50 57 52 5F</span>
+<span class="">2D 30 32 34 2E 32 30 00</span>
+</div>
+<span class="w-48 pl-4 text-slate-800 dark:text-slate-200">SIG_PWR_-024.20.</span>
+</div>
+<div class="flex items-center py-1 hover:bg-slate-200/50 dark:hover:bg-slate-900 rounded px-1 transition">
+<span class="w-24 text-slate-500">00000040</span>
+<div class="flex-1 flex gap-2">
+<span class="">42 41 54 54 5F 56 4F 4C</span>
+<span class="bg-teal-500 text-slate-950 font-bold px-1 rounded">EB 90</span>
+<span class="">54 4C 4D 5F 48 44</span>
+</div>
+<span class="w-48 pl-4 text-emerald-500 font-bold">BATT_VOL..TLM_HD</span>
+</div>
+<div class="flex items-center py-1 hover:bg-slate-200/50 dark:hover:bg-slate-900 rounded px-1 transition">
+<span class="w-24 text-slate-500">00000050</span>
+<div class="flex-1 flex gap-2">
+<span class="">43 52 43 33 32 3A 39 44</span>
+<span class="">46 31 30 42 43 38 00 00</span>
+</div>
+<span class="w-48 pl-4 text-sky-400 font-bold">CRC32:9DF10BC8..</span>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="flex items-center justify-between text-xs font-mono text-slate-500">
+<span class="flex items-center gap-1.5 text-emerald-500 font-bold">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> CRC32 Validated for All Demodulated Frames
+              </span>
+<div class="flex gap-2">
+<button class="h-8 px-3 rounded bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                  EXPORT PCAP
+                </button>
+<button class="h-8 px-3 rounded bg-teal-600 text-white font-bold hover:bg-teal-500 transition">
+                  EXPORT TELEMETRY JSON
+                </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- ================= NATIVE DESKTOP STATUSBAR ================= -->
+<footer class="h-7 bg-white dark:bg-[#0a0e16] border-t border-slate-200 dark:border-slate-800/80 px-4 flex items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400 shrink-0">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="">DSP Core Load:</span>
+<span class="text-emerald-500 font-bold">8.4%</span>
+<div class="w-14 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="w-[8.4%] h-full bg-emerald-500"></div>
+</div>
+</div>
+<span class="">•</span>
+<div class="">Buffer Footprint: <strong class="text-slate-700 dark:text-slate-200">16.38 MB</strong></div>
+<span class="">•</span>
+<div class="">Throughput: <strong class="text-slate-700 dark:text-slate-200">2.048 MS/s CF32</strong></div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="">Worker Thread: <strong class="text-teal-600 dark:text-brand-teal">0.12 ms latency</strong></span>
+</div>
+<span class="">•</span>
+<span class="">SIMD: AVX-512 FMA</span>
+<span class="">•</span>
+<span class="text-emerald-500">Dropped: 0 pkts</span>
+</div>
+</footer>
+<!-- ================= INLINE INTERACTIVE CONTROLS ================= -->
+<script>
+    // Tab switching logic
+    function switchVisualization(tabKey) {
+      const tabs = ['spectrum', 'waterfall', 'constellation', 'bitstream'];
+      tabs.forEach(t => {
+        const viewEl = document.getElementById('view-' + t);
+        const btnEl = document.getElementById('tab-btn-' + t);
+        if (viewEl && btnEl) {
+          if (t === tabKey) {
+            viewEl.classList.remove('hidden');
+            viewEl.classList.add('flex');
+            btnEl.className = 'px-4 py-2 rounded-lg bg-teal-600 dark:bg-brand-teal text-white dark:text-slate-950 font-bold flex items-center gap-2 shadow-sm transition';
+          } else {
+            viewEl.classList.remove('flex');
+            viewEl.classList.add('hidden');
+            btnEl.className = 'px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2 transition';
+          }
+        }
+      });
+    }
+
+    // Accordion toggle helper
+    function toggleAccordion(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.toggle('hidden');
+      }
+    }
+
+    // Live Dark/Light Mode Switcher
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const themeLabel = document.getElementById('themeLabel');
+      
+      if (htmlEl.classList.contains('dark')) {
+        htmlEl.classList.remove('dark');
+        themeIcon.innerText = 'dark_mode';
+        themeIcon.className = 'material-symbols-outlined text-[16px] text-slate-700';
+        themeLabel.innerText = 'Dark';
+      } else {
+        htmlEl.classList.add('dark');
+        themeIcon.innerText = 'light_mode';
+        themeIcon.className = 'material-symbols-outlined text-[16px] text-amber-400';
+        themeLabel.innerText = 'Light';
+      }
+    }
+
+    // Sub-navigation workspace links
+    function navToWorkspace(tabKey) {
+      switchVisualization(tabKey);
+      const navLinks = document.querySelectorAll('nav a');
+      navLinks.forEach((link, idx) => {
+        const keys = ['spectrum', 'spectrum', 'constellation', 'bitstream'];
+        if (keys[idx] === tabKey) {
+          link.className = 'px-3 py-1.5 rounded-md font-mono text-xs font-semibold bg-white dark:bg-slate-800 text-teal-600 dark:text-brand-teal shadow-sm flex items-center gap-1.5';
+        } else {
+          link.className = 'px-3 py-1.5 rounded-md font-mono text-xs text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-brand-teal hover:bg-white/50 dark:hover:bg-slate-800/50 transition flex items-center gap-1.5';
+        }
+      });
+    }
+
+    // Trigger File Input Modal Simulation
+    function triggerFileIngest() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.iq,.wav,.bin';
+      fileInput.onchange = e => {
+        const file = e.target.files[0];
+        if (file) {
+          const chipLabel = document.querySelector('header span.truncate');
+          if (chipLabel) chipLabel.innerText = file.name;
+          alert(`File "${file.name}" ingested successfully! Normalized baseband complex64 buffer loaded.`);
+        }
+      };
+      fileInput.click();
+    }
+
+    // Demodulation Execution Simulation
+    function runDemodulation() {
+      const btn = document.getElementById('btnRunDemod');
+      const statusText = document.getElementById('demodLockStatus');
+      if (btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> PROCESSING COSTAS LOOP...';
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          if (statusText) statusText.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Locked (EVM: 4.12% RMS - Re-calibrated)';
+          switchVisualization('constellation');
+          alert('Costas Loop Carrier & Symbol Timing Sync completed! Constellation updated.');
+        }, 800);
+      }
+    }
+
+    // FEC Decoding Simulation
+    function runFecDecode() {
+      const btn = document.getElementById('btnRunFec');
+      if (btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> DECODING VITERBI/RS...';
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          switchVisualization('bitstream');
+          alert('Viterbi Decoded bitstream ready! CRC32 validated (0 bit errors).');
+        }, 700);
+      }
+    }
+
+    // Sync word Hex Search Simulation
+    function searchSyncWord() {
+      const val = document.getElementById('syncWordInput')?.value || '0xEB90';
+      alert(`Cross-correlation search completed for pattern ${val}: 14 Frame Headers Matched.`);
+      switchVisualization('bitstream');
+    }
+  </script>
+
+
+</body></html>
