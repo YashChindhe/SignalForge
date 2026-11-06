@@ -1,0 +1,24 @@
+# Core
+numpy>=1.24
+scipy>=1.10
+
+# GUI
+PyQt6>=6.5
+pyqtgraph>=0.13
+matplotlib>=3.7
+
+# ML
+scikit-learn>=1.3
+joblib>=1.3
+
+# FEC / Channel Coding
+scikit-commpy>=0.7
+reedsolo>=1.7
+
+# Dataset (training only)
+h5py>=3.8
+
+# Development
+pytest>=7.0
+pytest-cov>=4.0
+pytest-qt>=4.2
